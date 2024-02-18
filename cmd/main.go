@@ -1,11 +1,13 @@
 package main
 
 import (
+	"database/sql"
 	"html/template"
 	"io"
 
 	"github.com/labstack/echo/v4"
 	"github.com/labstack/echo/v4/middleware"
+	_ "github.com/mattn/go-sqlite3"
 )
 
 type Template struct {
@@ -23,6 +25,12 @@ func (t *Template) Render(w io.Writer, name string, data interface{}, c echo.Con
 }
 
 func main() {
+	db, err := sql.Open("sqlite3", "auth-diaries.db")
+	if err != nil {
+		panic(err)
+	}
+	defer db.Close()
+
 	e := echo.New()
 
 	e.Renderer = newTemplate()
@@ -37,7 +45,40 @@ func main() {
 	})
 
 	e.POST("/api/v1/auth/login", func(c echo.Context) error {
-		user := newUser()
+		email := c.FormValue("email")
+		password := c.FormValue("password")
+
+		// Prepare statement
+		stmt, err := db.Prepare("SELECT * FROM users WHERE email = ?")
+		if err != nil {
+			panic(err)
+		}
+		defer stmt.Close()
+
+		// Execute query with dynamic value
+		rows, err := stmt.Query(email)
+		if err != nil {
+			panic(err)
+		}
+		defer rows.Close()
+
+		var user User
+
+		// Iterate over rows
+		for rows.Next() {
+			// Update user fields
+			if err := rows.Scan(&user.Name, &user.Email, &user.Password); err != nil {
+				panic(err)
+			}
+		}
+		if err := rows.Err(); err != nil {
+			panic(err)
+		}
+
+		if password != user.Password {
+			return echo.ErrUnauthorized
+		}
+
 		return c.Render(200, "user-card", newPageData(user))
 	})
 
