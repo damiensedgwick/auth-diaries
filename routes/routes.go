@@ -2,8 +2,8 @@ package routes
 
 import (
 	"github.com/damiensedgwick/auth-diaries/database"
-	"github.com/damiensedgwick/auth-diaries/handler/page"
-	"github.com/damiensedgwick/auth-diaries/handler/user"
+	"github.com/damiensedgwick/auth-diaries/model/page"
+	"github.com/damiensedgwick/auth-diaries/model/user"
 	"github.com/labstack/echo/v4"
 	"golang.org/x/crypto/bcrypt"
 )

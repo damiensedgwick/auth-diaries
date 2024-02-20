@@ -1,6 +1,6 @@
 package page
 
-import "github.com/damiensedgwick/auth-diaries/handler/user"
+import "github.com/damiensedgwick/auth-diaries/model/user"
 
 type PageData struct {
 	User user.User
