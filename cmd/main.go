@@ -6,6 +6,8 @@ import (
 
 	"github.com/damiensedgwick/auth-diaries/database"
 	"github.com/damiensedgwick/auth-diaries/routes"
+	"github.com/gorilla/sessions"
+	"github.com/labstack/echo-contrib/session"
 	"github.com/labstack/echo/v4"
 	"github.com/labstack/echo/v4/middleware"
 	_ "github.com/mattn/go-sqlite3"
@@ -33,6 +35,7 @@ func main() {
 	e.Use(middleware.Logger())
 	e.Use(middleware.Recover())
 	e.Use(middleware.Secure())
+	e.Use(session.Middleware(sessions.NewCookieStore([]byte("mysecret"))))
 	e.Static("/static", "static")
 
 	e.Renderer = newTemplate()
