@@ -4,13 +4,8 @@ import (
 	"html/template"
 	"io"
 
-	"github.com/damiensedgwick/auth-diaries/database"
-	"github.com/damiensedgwick/auth-diaries/routes"
-	"github.com/gorilla/sessions"
-	"github.com/labstack/echo-contrib/session"
 	"github.com/labstack/echo/v4"
 	"github.com/labstack/echo/v4/middleware"
-	_ "github.com/mattn/go-sqlite3"
 )
 
 type Template struct {
@@ -19,7 +14,7 @@ type Template struct {
 
 func newTemplate() *Template {
 	return &Template{
-		tmpl: template.Must(template.ParseGlob("views/*.html")),
+		tmpl: template.Must(template.ParseGlob("templates/*.html")),
 	}
 }
 
@@ -28,21 +23,18 @@ func (t *Template) Render(w io.Writer, name string, data interface{}, c echo.Con
 }
 
 func main() {
-	database.NewDBConn()
-
 	e := echo.New()
 
 	e.Use(middleware.Logger())
+	e.Static("/static", "static")
 	e.Use(middleware.Recover())
 	e.Use(middleware.Secure())
-	e.Use(session.Middleware(sessions.NewCookieStore([]byte("mysecret"))))
-	e.Static("/static", "static")
 
 	e.Renderer = newTemplate()
 
-	e.GET("/", routes.HomeRoute)
-	e.POST("/api/v1/auth/login", routes.LoginRoute)
-	e.POST("/api/v1/auth/logout", routes.LogoutRoute)
+	e.GET("/", func(c echo.Context) error {
+		return c.Render(200, "index", nil)
+	})
 
 	e.Logger.Fatal(e.Start(":8080"))
 }
