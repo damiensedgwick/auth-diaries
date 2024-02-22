@@ -4,7 +4,7 @@ all: clean format build run
 
 build:
 	@echo "Building..."
-	@go build -tags netgo -a -v -o bin/$(BINARY_NAME) main.go
+	@go build -tags netgo -a -v -o bin/$(BINARY_NAME) cmd/main.go
 
 clean:
 	@echo "Cleaning..."
@@ -13,7 +13,7 @@ clean:
 
 format:
 	@echo "Formatting..."
-	@go fmt
+	@go fmt ./...
 
 run:
 	@echo "Running..."
