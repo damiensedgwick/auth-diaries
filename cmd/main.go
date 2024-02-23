@@ -33,12 +33,15 @@ func main() {
 	e.Use(middleware.Logger())
 	e.Use(middleware.Recover())
 	e.Use(middleware.Secure())
-	e.Use(session.Middleware(sessions.NewCookieStore([]byte("secret"))))
+	store := sessions.NewCookieStore([]byte("secret"))
+	e.Use(session.Middleware(store))
 
 	e.Renderer = newTemplate()
 
 	e.GET("/", func(c echo.Context) error {
 		sess, _ := session.Get("session", c)
+
+		fmt.Println(sess)
 
 		if sess.Values["user"] != nil {
 			var user User
@@ -46,6 +49,7 @@ func main() {
 			err := json.Unmarshal(sess.Values["user"].([]byte), &user)
 			if err != nil {
 				fmt.Println("error unmarshalling user value")
+				return err
 			}
 
 			return c.Render(200, "index", newPageData(user))
@@ -61,10 +65,36 @@ func main() {
 	e.POST("/auth/sign-in", func(c echo.Context) error {
 		user := newUser()
 
+		sess, _ := session.Get("session", c)
+		sess.Options = &sessions.Options{
+			Path:     "/",
+			MaxAge:   86400 * 7,
+			HttpOnly: true,
+		}
+		userBytes, err := json.Marshal(user)
+		if err != nil {
+			fmt.Println("error marshalling user value")
+			return err
+		}
+		sess.Values["user"] = userBytes
+		err = sess.Save(c.Request(), c.Response())
+		if err != nil {
+			fmt.Println("error saving session")
+			return err
+		}
+
 		return c.Render(200, "index", newPageData(user))
 	})
 
 	e.POST("/auth/sign-out", func(c echo.Context) error {
+		sess, _ := session.Get("session", c)
+		sess.Options.MaxAge = -1
+		err := sess.Save(c.Request(), c.Response())
+		if err != nil {
+			fmt.Println("error saving session")
+			return err
+		}
+
 		return c.Render(200, "index", nil)
 	})
 
