@@ -5,11 +5,15 @@ import (
 	"fmt"
 	"html/template"
 	"io"
+	"time"
 
 	"github.com/gorilla/sessions"
+	"github.com/jmoiron/sqlx"
 	"github.com/labstack/echo-contrib/session"
 	"github.com/labstack/echo/v4"
 	"github.com/labstack/echo/v4/middleware"
+	_ "github.com/mattn/go-sqlite3"
+	"golang.org/x/crypto/bcrypt"
 )
 
 type Template struct {
@@ -26,7 +30,11 @@ func (t *Template) Render(w io.Writer, name string, data interface{}, c echo.Con
 	return t.tmpl.ExecuteTemplate(w, name, data)
 }
 
+var db *sqlx.DB
+
 func main() {
+	db = sqlx.MustConnect("sqlite3", "auth-diaries.db")
+
 	e := echo.New()
 
 	e.Static("/static", "static")
@@ -40,8 +48,6 @@ func main() {
 
 	e.GET("/", func(c echo.Context) error {
 		sess, _ := session.Get("session", c)
-
-		fmt.Println(sess)
 
 		if sess.Values["user"] != nil {
 			var user User
@@ -63,7 +69,20 @@ func main() {
 	})
 
 	e.POST("/auth/sign-in", func(c echo.Context) error {
-		user := newUser()
+		email := c.FormValue("email")
+		password := c.FormValue("password")
+
+		var user User
+
+		err := db.Get(&user, "SELECT * FROM users WHERE email = ?", email)
+		if err != nil {
+			fmt.Println("error getting user from database:", err)
+			return echo.ErrUnauthorized
+		}
+
+		if err := bcrypt.CompareHashAndPassword([]byte(user.Password), []byte(password)); err != nil {
+			return echo.ErrUnauthorized
+		}
 
 		sess, _ := session.Get("session", c)
 		sess.Options = &sessions.Options{
@@ -71,12 +90,15 @@ func main() {
 			MaxAge:   86400 * 7,
 			HttpOnly: true,
 		}
+
 		userBytes, err := json.Marshal(user)
 		if err != nil {
 			fmt.Println("error marshalling user value")
 			return err
 		}
+
 		sess.Values["user"] = userBytes
+
 		err = sess.Save(c.Request(), c.Response())
 		if err != nil {
 			fmt.Println("error saving session")
@@ -112,9 +134,12 @@ func newPageData(user User) PageData {
 }
 
 type User struct {
-	Name     string
-	Email    string
-	Password string
+	ID        string     `db:"id"`
+	Name      string     `db:"name"`
+	Email     string     `db:"email"`
+	Password  string     `db:"password"`
+	CreatedAt time.Time  `db:"created_at"`
+	UpdatedAt *time.Time `db:"updated_at"`
 }
 
 func newUser() User {
