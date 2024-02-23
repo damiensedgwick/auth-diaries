@@ -58,6 +58,16 @@ func main() {
 		return c.Render(200, "auth-form", nil)
 	})
 
+	e.POST("/auth/sign-in", func(c echo.Context) error {
+		user := newUser()
+
+		return c.Render(200, "index", newPageData(user))
+	})
+
+	e.POST("/auth/sign-out", func(c echo.Context) error {
+		return c.Render(200, "index", nil)
+	})
+
 	e.Logger.Fatal(e.Start(":8080"))
 }
 

@@ -25,9 +25,28 @@
   </header>
 
   <main>
-    <section id="content"></section>
+    <section id="content">
+      {{ if .User }}
+      {{ template "user-card" . }}
+      {{ end }}
+    </section>
   </main>
 
+  <script type="text/javascript">
+  document.addEventListener("DOMContentLoaded", (event) => {
+    document.body.addEventListener('htmx:beforeSwap', function(evt) {
+      if (evt.detail.xhr.status === 422) {
+        // allow 422 responses to swap as we are using this as a signal that
+        // a form was submitted with bad data and want to rerender with the
+        // errors
+        //
+        // set isError to false to avoid error logging in console
+        evt.detail.shouldSwap = true;
+        evt.detail.isError = false;
+      }
+    });
+  });
+  </script>
 </body>
 </html>
 {{ end }}
@@ -43,12 +62,12 @@
   <p>Welcome, {{ .User.Name }}</p>
 </li>
 <li>
-  <button type="button">Sign Out</button>
+  <button type="button" hx-post="/auth/sign-out" hx-target="body">Sign Out</button>
 </li>
 {{ end }}
 
 {{ block "auth-form" . }}
-<form id="auth-form">
+<form id="auth-form" hx-post="/auth/sign-in" hx-target="body">
   <p>Sign in to Auth Diaries</p>
   <div>
     <label for="name">
@@ -65,3 +84,11 @@
   <button type="submit">Sign In</button>
 </form>
 {{ end }}
+
+{{ block "user-card" . }}
+<div id="user-card">
+  <p>{{ .User.Name}}</p>
+  <p>{{ .User.Email }}</p>
+</div>
+{{ end }}
+
