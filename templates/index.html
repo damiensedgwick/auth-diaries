@@ -6,19 +6,62 @@
     <meta name="viewport" content="width=device-width, initial-scale=1">
     <title>Auth Diaries</title>
     <link href="static/styles.css" rel="stylesheet">
+    <script src="static/htmx.min.js"></script>
 </head>
 <body>
   <header>
     <nav>
       <a href="/">Auth Diaries</a>
       <ul>
-        <li>
-          <button type="button">Sign In</button>
-        </li>
+        {{ if not .User }}
+        {{ template "sign-in" . }}
+        {{ end }}
+
+        {{ if .User }}
+        {{ template "sign-out" . }}
+        {{ end }}
       </ul>
     </nav>
   </header>
-  <h1>Hello, World!</h1>
+
+  <main>
+    <section id="content"></section>
+  </main>
+
 </body>
 </html>
+{{ end }}
+
+{{ block "sign-in" . }}
+<li>
+  <button type="button" hx-get="/auth/sign-in" hx-target="#content">Sign In</button>
+</li>
+{{ end }}
+
+{{ block "sign-out" . }}
+<li>
+  <p>Welcome, {{ .User.Name }}</p>
+</li>
+<li>
+  <button type="button">Sign Out</button>
+</li>
+{{ end }}
+
+{{ block "auth-form" . }}
+<form id="auth-form">
+  <p>Sign in to Auth Diaries</p>
+  <div>
+    <label for="name">
+      Name:
+      <input type="text" name="name" value="" /> 
+    </label>
+  </div>
+  <div>
+    Password:
+    <label for="password">
+      <input type="password" name="password" value="" /> 
+    </label>
+  </div>
+  <button type="submit">Sign In</button>
+</form>
 {{ end }}
