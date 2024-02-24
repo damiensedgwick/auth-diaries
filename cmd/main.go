@@ -5,10 +5,12 @@ import (
 	"fmt"
 	"html/template"
 	"io"
+	"os"
 	"time"
 
 	"github.com/gorilla/sessions"
 	"github.com/jmoiron/sqlx"
+	"github.com/joho/godotenv"
 	"github.com/labstack/echo-contrib/session"
 	"github.com/labstack/echo/v4"
 	"github.com/labstack/echo/v4/middleware"
@@ -33,7 +35,12 @@ func (t *Template) Render(w io.Writer, name string, data interface{}, c echo.Con
 var db *sqlx.DB
 
 func main() {
-	db = sqlx.MustConnect("sqlite3", "auth-diaries.db")
+	err := godotenv.Load(".env")
+	if err != nil {
+		fmt.Println("error loading godotenv")
+	}
+
+	db = sqlx.MustConnect("sqlite3", os.Getenv("AUTH_DIARIES_DB_PATH"))
 
 	e := echo.New()
 
@@ -41,7 +48,8 @@ func main() {
 	e.Use(middleware.Logger())
 	e.Use(middleware.Recover())
 	e.Use(middleware.Secure())
-	store := sessions.NewCookieStore([]byte("secret"))
+
+	store := sessions.NewCookieStore([]byte(os.Getenv("AUTH_DIARIES_COOKIE_STORE_SECRET")))
 	e.Use(session.Middleware(store))
 
 	e.Renderer = newTemplate()
