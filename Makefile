@@ -1,15 +1,15 @@
-BINARY_NAME=my-website
+BINARY_NAME=auth-diaries
 
 all: clean format build run
 
 build:
 	@echo "Building..."
-	@go build -tags netgo -a -v -o bin/$(BINARY_NAME) cmd/main.go
+	@go build -o bin/$(BINARY_NAME) cmd/main.go
 
 clean:
 	@echo "Cleaning..."
 	@go clean
-	@rm bin/$(BINARY_NAME)
+	@if [ -e bin/$(BINARY_NAME) ]; then rm bin/$(BINARY_NAME); fi
 
 format:
 	@echo "Formatting..."

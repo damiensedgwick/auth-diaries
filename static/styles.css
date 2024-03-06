@@ -62,14 +62,14 @@ section {
   align-items: center;
 }
 
-section > p {
+section>p {
   text-align: center;
   font-weight: bold;
   max-width: 65ch;
   font-weight: 1.1em;
 }
 
-section > p:first-of-type {
+section>p:first-of-type {
   font-size: 2em;
   margin-bottom: 1em;
 }
@@ -80,26 +80,25 @@ form {
   display: flex;
   flex-direction: column;
   width: 25em;
+  margin-top: 1rem;
 }
-
-label {}
 
 input {
   padding: 0.5em;
   width: 100%;
 }
 
-form > p {
+form>p {
   text-align: center;
   font-weight: bold;
 }
 
-form > div {
+form>div {
   margin: 1em auto;
   width: 100%;
 }
 
-form > button {
+form>button {
   margin: 1em 5em;
   padding: 0.5em 1.5em;
   border: none;

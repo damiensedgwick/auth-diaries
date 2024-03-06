@@ -5,6 +5,7 @@ import (
 	"fmt"
 	"html/template"
 	"io"
+	"net/http"
 	"os"
 	"time"
 
@@ -126,6 +127,67 @@ func main() {
 		}
 
 		return c.Render(200, "index", nil)
+	})
+
+	e.POST("/user", func(c echo.Context) error {
+		sess, _ := session.Get("session", c)
+
+		if sess.Values["user"] == nil {
+			return echo.ErrUnauthorized
+		}
+
+		var user User
+
+		err := json.Unmarshal(sess.Values["user"].([]byte), &user)
+		if err != nil {
+			fmt.Println("error unmarshalling user value")
+			return err
+		}
+
+		name := c.FormValue("name")
+		password := c.FormValue("password")
+
+		query := "UPDATE users SET "
+		updateParams := []interface{}{}
+
+		if name != "" {
+			query += "name = ?,"
+			updateParams = append(updateParams, name)
+		}
+
+		if password != "" {
+			hash, err := bcrypt.GenerateFromPassword([]byte(password), 10)
+			if err != nil {
+				fmt.Println("error hasing new password")
+				return err
+			}
+
+			query += "password = ?,"
+			updateParams = append(updateParams, hash)
+		}
+
+		// Remove trailing comma, if necessary
+		if len(updateParams) > 0 {
+			query = query[:len(query)-1]
+		}
+
+		query += " WHERE id = ?"
+		updateParams = append(updateParams, user.ID)
+
+		db.Exec(query, updateParams...)
+
+		updatedUserData, err := json.Marshal(user)
+		if err != nil {
+			return c.JSON(http.StatusInternalServerError, "Error updating session")
+		}
+
+		sess.Values["user"] = updatedUserData
+		err = sess.Save(c.Request(), c.Response())
+		if err != nil {
+			return c.JSON(http.StatusInternalServerError, "Error saving session")
+		}
+
+		return c.Render(200, "index", newPageData(user))
 	})
 
 	e.Logger.Fatal(e.Start(":8080"))

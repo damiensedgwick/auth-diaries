@@ -1,13 +1,15 @@
 {{ block "index" . }}
 <!DOCTYPE html>
+
 <head>
   <html lang="en">
-    <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1">
-    <title>Auth Diaries</title>
-    <link href="static/styles.css" rel="stylesheet">
-    <script src="static/htmx.min.js"></script>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>Auth Diaries</title>
+  <link href="static/styles.css" rel="stylesheet">
+  <script src="static/htmx.min.js"></script>
 </head>
+
 <body>
   <header>
     <nav>
@@ -27,31 +29,36 @@
   <main>
     <section id="content">
       <p>
-        Welcome to Auth Diaries! 
+        Welcome to Auth Diaries!
       </p>
       <p>
-        This is my little advernture into the world of 
+        This is my little advernture into the world of
         authentication with Golang, SQLite and utilising Sessions.
       </p>
+
+      {{ if .User }}
+      {{ template "update-user-form" . }}
+      {{ end }}
     </section>
   </main>
 
   <script type="text/javascript">
-  document.addEventListener("DOMContentLoaded", (event) => {
-    document.body.addEventListener('htmx:beforeSwap', function(evt) {
-      if (evt.detail.xhr.status === 422) {
-        // allow 422 responses to swap as we are using this as a signal that
-        // a form was submitted with bad data and want to rerender with the
-        // errors
-        //
-        // set isError to false to avoid error logging in console
-        evt.detail.shouldSwap = true;
-        evt.detail.isError = false;
-      }
+    document.addEventListener("DOMContentLoaded", (event) => {
+      document.body.addEventListener('htmx:beforeSwap', function (evt) {
+        if (evt.detail.xhr.status === 422) {
+          // allow 422 responses to swap as we are using this as a signal that
+          // a form was submitted with bad data and want to rerender with the
+          // errors
+          //
+          // set isError to false to avoid error logging in console
+          evt.detail.shouldSwap = true;
+          evt.detail.isError = false;
+        }
+      });
     });
-  });
   </script>
 </body>
+
 </html>
 {{ end }}
 
@@ -63,9 +70,6 @@
 
 {{ block "sign-out" . }}
 <li>
-  <p>Welcome, {{ .User.Name }}</p>
-</li>
-<li>
   <button type="button" hx-post="/auth/sign-out" hx-target="body">Sign Out</button>
 </li>
 {{ end }}
@@ -74,15 +78,15 @@
 <form id="auth-form" hx-post="/auth/sign-in" hx-target="body">
   <p>Sign in to Auth Diaries</p>
   <div>
-      Name:
+    Email:
     <label for="email">
-      <input type="text" name="email" value="" /> 
+      <input type="text" name="email" value="" />
     </label>
   </div>
   <div>
     Password:
     <label for="password">
-      <input type="password" name="password" value="" /> 
+      <input type="password" name="password" value="" />
     </label>
   </div>
   <button type="submit">Sign In</button>
@@ -96,3 +100,21 @@
 </div>
 {{ end }}
 
+{{ block "update-user-form" . }}
+<form id="update-user-form" hx-post="/user" hx-target="body">
+  <p>Update your profile details:</p>
+  <div>
+    Name:
+    <label for="name">
+      <input type="text" name="name" value="" />
+    </label>
+  </div>
+  <div>
+    Password:
+    <label for="password">
+      <input type="password" name="password" value="" />
+    </label>
+  </div>
+  <button type="submit">Save</button>
+</form>
+{{ end }}
