@@ -211,10 +211,3 @@ type User struct {
 	CreatedAt time.Time  `db:"created_at"`
 	UpdatedAt *time.Time `db:"updated_at"`
 }
-
-func newUser() User {
-	return User{
-		Name:  "Damien Sedgwick",
-		Email: "damienksedgwick@gmail.com",
-	}
-}
