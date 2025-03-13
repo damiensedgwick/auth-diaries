@@ -1,6 +1,7 @@
 module github.com/damiensedgwick/auth-diaries
 
 go 1.22.0
+toolchain go1.23.7
 
 require (
 	github.com/gorilla/sessions v1.2.2
@@ -9,7 +10,7 @@ require (
 	github.com/labstack/echo-contrib v0.15.0
 	github.com/labstack/echo/v4 v4.11.4
 	github.com/mattn/go-sqlite3 v1.14.22
-	golang.org/x/crypto v0.21.0
+	golang.org/x/crypto v0.35.0
 )
 
 require (
@@ -21,8 +22,8 @@ require (
 	github.com/mattn/go-isatty v0.0.20 // indirect
 	github.com/valyala/bytebufferpool v1.0.0 // indirect
 	github.com/valyala/fasttemplate v1.2.2 // indirect
-	golang.org/x/net v0.23.0 // indirect
-	golang.org/x/sys v0.18.0 // indirect
-	golang.org/x/text v0.14.0 // indirect
+	golang.org/x/net v0.36.0 // indirect
+	golang.org/x/sys v0.30.0 // indirect
+	golang.org/x/text v0.22.0 // indirect
 	golang.org/x/time v0.5.0 // indirect
 )
